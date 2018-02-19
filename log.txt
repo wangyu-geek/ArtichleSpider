@@ -4,3 +4,5 @@
 2018-02-18 13:21:50 [scrapy.utils.log] INFO: Overridden settings: {'BOT_NAME': 'ArticleSpider', 'LOG_ENABLED': False, 'LOG_FILE': 'log.txt', 'NEWSPIDER_MODULE': 'ArticleSpider.spiders', 'SPIDER_MODULES': ['ArticleSpider.spiders']}
 2018-02-18 13:30:38 [scrapy.utils.log] INFO: Scrapy 1.4.0 started (bot: ArticleSpider)
 2018-02-18 13:30:38 [scrapy.utils.log] INFO: Overridden settings: {'BOT_NAME': 'ArticleSpider', 'LOG_ENABLED': False, 'LOG_FILE': 'log.txt', 'NEWSPIDER_MODULE': 'ArticleSpider.spiders', 'SPIDER_MODULES': ['ArticleSpider.spiders']}
+2018-02-19 16:00:50 [scrapy.utils.log] INFO: Scrapy 1.4.0 started (bot: ArticleSpider)
+2018-02-19 16:00:50 [scrapy.utils.log] INFO: Overridden settings: {'BOT_NAME': 'ArticleSpider', 'LOG_ENABLED': False, 'LOG_FILE': 'log.txt', 'NEWSPIDER_MODULE': 'ArticleSpider.spiders', 'SPIDER_MODULES': ['ArticleSpider.spiders']}
