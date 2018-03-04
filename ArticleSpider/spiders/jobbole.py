@@ -7,11 +7,27 @@ from urllib import parse
 from ArticleSpider.items import JobBoleArticleItem
 from ArticleSpider.utils.common import get_md5
 from ArticleSpider.items import ArticleItemLoader
+from selenium import webdriver
+from scrapy.xlib.pydispatch import dispatcher
+from scrapy import signals
 
 class JobboleSpider(scrapy.Spider):
     name = 'jobbole'
     allowed_domains = ['blog.jobbole.com']
     start_urls = ['http://blog.jobbole.com/all-posts/']
+
+    # def __init__(self):
+    #     """
+    #     启动 chrome
+    #     """
+    #     self.browser = webdriver.Chrome(executable_path="D:\software\download\chromedriver_win32\chromedriver.exe")
+    #     super(JobboleSpider, self).__init__()
+    #     dispatcher.connect(self.spider_closed, signals.spider_closed)
+    #
+    # def spider_closed(self, spider):
+    #     # 爬虫退出时，关闭 chrome
+    #     print("spider closed")
+    #     self.browser.quit()
 
     def parse(self, response):
         """
@@ -30,7 +46,6 @@ class JobboleSpider(scrapy.Spider):
             # 提取下一页，并交给 scrapy 下载
         next_url = response.css("a.next.page-numbers::attr(href)").extract_first()
         yield Request(url=next_url, callback=self.parse)
-
 
     def parse_detail(self, response):
         # scrapy 自动 pipelines 的 process_item

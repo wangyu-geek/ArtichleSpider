@@ -54,11 +54,12 @@ COOKIES_ENABLED = False
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#     'ArticleSpider.middlewares.JSPageMiddleware': 1,
-#    # 'ArticleSpider.middlewares.RandomUserAgentMiddlware': 543,
-#     # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'ArticleSpider.middlewares.RandomUserAgentMiddle': 543,
+    # 'ArticleSpider.middlewares.PhatomJSMiddleware': 1,
+   # 'ArticleSpider.middlewares.RandomUserAgentMiddlware': 543,
+    # 'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
@@ -72,7 +73,7 @@ ITEM_PIPELINES = {
    # 'ArticleSpider.pipelines.JsonExporterPipleline': 2,
    # # 'scrapy.pipelines.images.ImagesPipeline': 1,
    #  'ArticleSpider.pipelines.ArticleImagePipeline': 1,
-   #  'ArticleSpider.pipelines.MysqlTwistedPipline': 1,
+    'ArticleSpider.pipelines.MysqlTwistedPipline': 1,
    #  'ArticleSpider.pipelines.ElasticsearchPipeline': 1
 }
 IMAGES_URLS_FIELD = "front_image_url"
@@ -112,10 +113,11 @@ AUTOTHROTTLE_ENABLED = True
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 MYSQL_HOST = "127.0.0.1"
-MYSQL_DBNAME = "article_spider"
+MYSQL_DB = "article_spider"
 MYSQL_USER = "root"
-MYSQL_PASSWORD = "root"
+MYSQL_PWD = ""
 
 
 SQL_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 SQL_DATE_FORMAT = "%Y-%m-%d"
+
