@@ -17,12 +17,15 @@ class ArticlespiderSpiderMiddleware(object):
 
     @classmethod
     def from_crawler(cls, crawler):
+        # 这个函数会被 middleware manager 调用
         # This method is used by Scrapy to create your spiders.
         s = cls()
+        # 发送信号
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         return s
 
     def process_spider_input(self, response, spider):
+        # engine 把 response 交给 spider 时
         # Called for each response that goes through the spider
         # middleware and into the spider.
 
@@ -30,6 +33,8 @@ class ArticlespiderSpiderMiddleware(object):
         return None
 
     def process_spider_output(self, response, result, spider):
+        # spider 解析 request 发给 engine，yield request
+        # 可以返回 items
         # Called with the results returned from the Spider, after
         # it has processed the response.
 
@@ -38,6 +43,7 @@ class ArticlespiderSpiderMiddleware(object):
             yield i
 
     def process_spider_exception(self, response, exception, spider):
+        # 异常处理
         # Called when a spider or process_spider_input() method
         # (from other spider middleware) raises an exception.
 
@@ -46,6 +52,8 @@ class ArticlespiderSpiderMiddleware(object):
         pass
 
     def process_start_requests(self, start_requests, spider):
+        # spider request 时调用，和 output类似
+        # 必须返回 requests
         # Called with the start requests of the spider, and works
         # similarly to the process_spider_output() method, except
         # that it doesn’t have a response associated.

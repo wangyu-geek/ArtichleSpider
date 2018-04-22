@@ -3,7 +3,7 @@
 # Define your item pipelines here
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+# See: http://doc.scra-py.org/en/latest/topics/item-pipeline.html
 import codecs
 import json
 import MySQLdb
@@ -11,6 +11,7 @@ import MySQLdb.cursors
 from scrapy.pipelines.images import ImagesPipeline
 from scrapy.exporters import JsonItemExporter
 from twisted.enterprise import adbapi
+
 
 class ArticlespiderPipeline(object):
     def process_item(self, item, spider):
@@ -115,3 +116,36 @@ class MysqlTwistedPipline(object):
         # 执行具体的插入，自动提交
         insert_sql, params = item.get_insert_sql()
         cursor.execute(insert_sql, params)
+
+class ElasticsearchPipeline(object):
+    # 将数据写入到 es 中
+    def process_item(self, item, spider):
+        # 将 item 转为 es 的数据
+        item.save_to_es()
+        return item
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
