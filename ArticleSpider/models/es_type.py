@@ -52,6 +52,33 @@ class LagouType(DocType):
         index = "zhaopin"
         doc_type = "lagou"
 
+
+class JobType(DocType):
+    suggest = Completion(analyzer=ik_analyzer)
+    url = Keyword()
+    url_object_id = Keyword()
+    title = Text(analyzer="ik_max_word")
+    city = Keyword()
+    work_years = Keyword()
+    degree_need = Keyword()
+    job_type = Keyword()
+    publish_time = Keyword()
+    tags = Text(analyzer='ik_max_word')
+    job_advantage = Text(analyzer="ik_max_word")
+    job_desc = Text(analyzer="ik_max_word")
+    addr = Text(analyzer="ik_max_word")
+    company_url = Keyword()
+    company_name = Text(analyzer="ik_max_word")
+    website = Keyword()
+    salary_min = Integer()
+    salary_max = Integer()
+    release_time = Date()
+
+    class Meta:
+        index = "zhaopin"
+        doc_type = "job"
+
 if __name__ == "__main__":
-    ArticleType.init()
+    # ArticleType.init()
     # LagouType.init()
+    JobType.init()

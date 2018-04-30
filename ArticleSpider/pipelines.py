@@ -123,6 +123,9 @@ class ElasticsearchPipeline(object):
         # 将 item 转为 es 的数据
         item.save_to_es()
         return item
+    def handle_error(self, failure, item, spider):
+        # 处理异步插入的异常
+        print(failure)
 
 
 

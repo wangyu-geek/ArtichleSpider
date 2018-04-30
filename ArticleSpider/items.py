@@ -13,7 +13,7 @@ from scrapy.loader import ItemLoader
 from ArticleSpider.utils.common import get_nums
 from ArticleSpider.settings import SQL_DATE_FORMAT, SQL_DATETIME_FORMAT
 from w3lib.html import remove_tags
-from models.es_type import ArticleType, LagouType
+from models.es_type import ArticleType, LagouType, JobType
 from elasticsearch_dsl.connections import connections
 es_article = connections.create_connection(ArticleType._doc_type.using)
 import time
@@ -310,6 +310,22 @@ def get_lagou_release_time(value):
         return result.group(0)
     return datetime.datetime.now().strftime(SQL_DATE_FORMAT)
 
+def get_lagou_release_time_as_date(value):
+    if "1天前" in value:
+        return getYesterday()
+    if "2天前" in value:
+        return getBeforeYesterday()
+    if "3天前" in value:
+        return getThreeDaysAgo()
+    pattern = "([\d]{1,2}:[\d]{1,2})"
+    if re.match(pattern=pattern, string=value):
+        return datetime.datetime.now().date()
+    pattern = "([\d]{4}\-[\d]{1,2}\-[\d]{1,2})"
+    result = re.match(pattern=pattern, string=value)
+    if result:
+        return datetime.datetime.strptime(result.group(0),'%Y-%m-%d')
+    return datetime.datetime.now().date()
+
 class LagouJobItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
 
@@ -333,15 +349,12 @@ class LagouJobItem(BaseJobItem):
     website = scrapy.Field()
     salary_min = scrapy.Field(
         input_processor=MapCompose(get_min_salary, get_lagou_salary),
-        output_processor=MapCompose(return_value)
     )
     salary_max = scrapy.Field(
         input_processor=MapCompose(get_max_salary, get_lagou_salary),
-        output_processor=MapCompose(return_value)
     )
     release_time = scrapy.Field(
-        input_processor=MapCompose(get_lagou_release_time),
-        output_processor=MapCompose(return_value)
+        input_processor=MapCompose(get_lagou_release_time_as_date),
     )
 
     def exists_value(self):
@@ -370,25 +383,28 @@ class LagouJobItem(BaseJobItem):
         return insert_sql, params
 
     def save_to_es(self):
-        lagou = LagouType()
-        lagou.url = self['url']
-        lagou.url_object_id = self['url_object_id']
-        lagou.title = self['title']
-        lagou.salary = self['salary']
-        lagou.work_years = self['salary']
-        lagou.degree_need = self['degree_need']
-        lagou.job_type = self['job_type']
-        lagou.publish_time = self['publish_time']
-        lagou.tags = self['tags']
-        lagou.job_advantage = self['job_advantage']
-        lagou.job_desc = self['job_desc']
-        lagou.job_addr = self['job_addr']
-        lagou.company_url = self['company_url']
-        lagou.company_name = self['company_name']
-        lagou.job_city = self['job_city']
-
-        lagou.save()
-        return lagou
+        job = JobType()
+        job.url = self['url']
+        job.meta.id = self['url_object_id']
+        job.title = self['title']
+        job.city = self['city']
+        job.work_years = self['work_years']
+        job.degree_need = self['degree_need']
+        job.job_type = self['job_type']
+        job.publish_time = self['publish_time']
+        job.tags = self['tags']
+        job.job_desc = remove_tags(self['job_desc'])
+        job.job_advantage = self['job_advantage']
+        job.addr = self['addr']
+        job.company_url = self['company_url']
+        job.company_name = self['company_name']
+        job.website = self['website']
+        job.salary_min = self['salary_min']
+        job.salary_max = self['salary_max']
+        job.release_time = self['release_time']
+        job.suggest = gen_suggests(JobType._doc_type.index, ((job.title, 10),) )
+        job.save()
+        return job
 
 
 def yingcai_salary_min(value):
@@ -436,6 +452,21 @@ def get_yingcai_release_time(value):
         return result.group(0)
     return datetime.datetime.now().strftime(SQL_DATE_FORMAT)
 
+def get_yingcai_release_time_as_date(value):
+    # 获取英才网职位发布时间
+    if "今天" in value:
+        return datetime.datetime.now().date()
+    if "昨天" in value:
+        return getYesterday()
+    result = re.match("((\d){1,2}\-(\d){1,2})", value)
+    if result:
+        release = str(datetime.datetime.now().year)+"-"+result.group(0)
+        return datetime.datetime.strptime(release, '%Y-%m-%d')
+    result = re.match("([\d]{4}\-[\d]{1,2}\-[\d]{1,2})", value)
+    if result:
+        return datetime.datetime.strptime(result.group(0), '%Y-%m-%d')
+    return datetime.datetime.now().date()
+
 class YingCaiJobItemLoader(BaseJobItemLoader):
     # 英才网 item loader 基类
     default_output_processor = TakeFirst()
@@ -448,19 +479,15 @@ class YingCaiJobItem(BaseJobItem):
     )
     city = scrapy.Field(
         input_processor=MapCompose(handle_yingcai_addr),
-        output_processor=MapCompose(return_value)
     )
     salary_min = scrapy.Field(
         input_processor=MapCompose(yingcai_salary_min),
-        output_processor=MapCompose(return_value)
     )
     salary_max = scrapy.Field(
         input_processor=MapCompose(yingcai_salary_max),
-        output_processor=MapCompose(return_value)
     )
     release_time = scrapy.Field(
-        input_processor=MapCompose(get_yingcai_release_time),
-        output_processor=MapCompose(return_value)
+        input_processor=MapCompose(get_yingcai_release_time_as_date),
     )
 
     def get_insert_sql(self):
@@ -478,3 +505,26 @@ class YingCaiJobItem(BaseJobItem):
             self["website"], self["salary_min"], self["salary_max"], self["release_time"]
         )
         return insert_sql, params
+
+    def save_to_es(self):
+        job = JobType()
+        job.url = self['url']
+        job.meta.id = self['url_object_id']
+        job.title = self['title']
+        job.city = self['city']
+        job.work_years = self['work_years']
+        job.degree_need = self['degree_need']
+        job.job_type = self['job_type']
+        job.publish_time = self['publish_time']
+        job.tags = self['tags']
+        job.job_desc = remove_tags(self['job_desc'])
+        job.addr = self['addr']
+        job.company_url = self['company_url']
+        job.company_name = self['company_name']
+        job.website = self['website']
+        job.salary_min = self['salary_min']
+        job.salary_max = self['salary_max']
+        job.release_time = self['release_time']
+        job.suggest = gen_suggests(JobType._doc_type.index, ((job.title, 10),) )
+        job.save()
+        return job
