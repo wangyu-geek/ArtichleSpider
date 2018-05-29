@@ -15,8 +15,12 @@ from ArticleSpider.settings import SQL_DATE_FORMAT, SQL_DATETIME_FORMAT
 from w3lib.html import remove_tags
 from models.es_type import ArticleType, LagouType, JobType
 from elasticsearch_dsl.connections import connections
-es_article = connections.create_connection(ArticleType._doc_type.using)
+import redis
 import time
+
+redis_cli = redis.StrictRedis(host="localhost")
+
+es_article = connections.create_connection(ArticleType._doc_type.using)
 
 class ArticlespiderItem(scrapy.Item):
     # define the fields for your item here like:
@@ -323,7 +327,7 @@ def get_lagou_release_time_as_date(value):
     pattern = "([\d]{4}\-[\d]{1,2}\-[\d]{1,2})"
     result = re.match(pattern=pattern, string=value)
     if result:
-        return datetime.datetime.strptime(result.group(0),'%Y-%m-%d')
+        return datetime.datetime.strptime(result.group(0),'%Y-%m-%d').date()
     return datetime.datetime.now().date()
 
 class LagouJobItemLoader(ItemLoader):
@@ -404,6 +408,7 @@ class LagouJobItem(BaseJobItem):
         job.release_time = self['release_time']
         job.suggest = gen_suggests(JobType._doc_type.index, ((job.title, 10),) )
         job.save()
+        redis_cli.incr("lagou_count")
         return job
 
 
@@ -527,4 +532,5 @@ class YingCaiJobItem(BaseJobItem):
         job.release_time = self['release_time']
         job.suggest = gen_suggests(JobType._doc_type.index, ((job.title, 10),) )
         job.save()
+        redis_cli.incr("yingcai_count")
         return job
